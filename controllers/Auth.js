@@ -2,7 +2,7 @@ import Users from "../models/UserModel.js"
 import jwt from "jsonwebtoken"
 import argon2 from "argon2"
 
-export const postLogin = async(req, res) => {
+export const postLogin = async (req, res) => {
     try {
         const user = await Users.findOne({
             where: {
@@ -42,12 +42,13 @@ export const postLogin = async(req, res) => {
             maxAge: 24 * 60 * 60 * 1000,
             secure: true
         });
-        res.json({ accessToken });
+        // Setelah login, kirimkan accessToken dan refreshToken
+        res.json({ accessToken, refreshToken });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "Terjadi kesalahan pada server" });
     }
-}
+};
 
 export const deleteLogout = async (req, res) => {
     try {

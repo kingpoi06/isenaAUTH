@@ -1,4 +1,4 @@
-import Pasien from "../models/PasienModel.js";
+import Pasiens from "../models/PasienModel.js";
 import Users from "../models/UserModel.js";
 import argon2 from "argon2";
 
@@ -6,16 +6,16 @@ export const getPasiens = async(req, res) =>{
     try {
         let response;
         if(req.role === "admin"){
-            response = await Pasien.findAll({
-                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs'],
+            response = await Pasiens.findAll({
+                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs', "role", "createdAt"],
                 include:[{
                     model: Users,
                     attributes:['username','email']
                 }]
             });
         }else{
-            response = await Pasien.findAll({
-                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs'],
+            response = await Pasiens.findAll({
+                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs', "role", "createdAt"],
                 where:{
                     userId: req.userId
                 },
@@ -32,7 +32,7 @@ export const getPasiens = async(req, res) =>{
 }
 export const getPasienById = async(req, res) =>{
     try {
-        const pasien = await Pasien.findOne({
+        const pasien = await Pasiens.findOne({
             where:{
                 uuid: req.params.id
             }
@@ -40,8 +40,8 @@ export const getPasienById = async(req, res) =>{
         if(!pasien) return res.status(404).json({msg: "Data not found!"});
         let response;
         if(req.role === "admin"){
-            response = await Pasien.findOne({
-                attributes:['uuid','nama','tgllahir','umur','alamat','noroom','nobpjs'],
+            response = await Pasiens.findOne({
+                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs', "role"],
                 where:{
                     id: pasien.id
                 },
@@ -51,8 +51,8 @@ export const getPasienById = async(req, res) =>{
                 }]
             });
         }else{
-            response = await Pasien.findOne({
-                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs'],
+            response = await Pasiens.findOne({
+                attributes:['uuid','nama','tgllahir','umur','alamat','norm','nobpjs', "role"],
                 where:{
                     [Op.and]:[{id: pasien.id}, {userId: req.userId}]
                 },
@@ -68,15 +68,16 @@ export const getPasienById = async(req, res) =>{
     }
 }
 export const createPasien = async(req, res) =>{
-    const {nama, tgllahir, umur, alamat, norm, nobpjs} = req.body;
+    const {nama, tgllahir, umur, alamat, norm, nobpjs, role} = req.body;
     try {
-        await Pasien.create({
+        await Pasiens.create({
             nama: nama,
             tgllahir: tgllahir,
             umur: umur,
             alamat: alamat,
             norm: norm,
             nobpjs: nobpjs,
+            role: role,
             userId: req.userId
         });
         res.status(201).json({msg: "Data Pasien Berhasil Dimasukan!"});
@@ -87,22 +88,22 @@ export const createPasien = async(req, res) =>{
 
 export const updatePasien = async(req, res) =>{
     try {
-        const pasien = await Pasien.findOne({
+        const pasien = await Pasiens.findOne({
             where:{
                 uuid: req.params.id
             }
         });
         if(!pasien) return res.status(404).json({msg: "Data not found!"});
-        const {nama, tgllahir, umur, alamat, norm, nobpjs} = req.body;
+        const {nama, tgllahir, umur, alamat, norm, nobpjs,  role} = req.body;
         if(req.role === "admin"){
-            await Pasien.update({nama, tgllahir, umur, alamat, norm, nobpjs},{
+            await Pasiens.update({nama, tgllahir, umur, alamat, norm, nobpjs,  role},{
                 where:{
                     id: pasien.id
                 }
             });
         }else{
             if(req.userId !== pasien.userId) return res.status(403).json({msg: "Access X"});
-            await Pasien.update({nama, tgllahir, umur, alamat, norm, nobpjs},{
+            await Pasiens.update({nama, tgllahir, umur, alamat, norm, nobpjs,  role},{
                 where:{
                     [Op.and]:[{id: pasien.id}, {userId: req.userId}]
                 }
@@ -115,22 +116,22 @@ export const updatePasien = async(req, res) =>{
 }
 export const deletePasien = async(req, res) =>{
     try {
-        const pasien = await Pasien.findOne({
+        const pasien = await Pasiens.findOne({
             where:{
                 uuid: req.params.id
             }
         });
         if(!pasien) return res.status(404).json({msg: "Data not found!"});
-        const {nama, tgllahir, umur, alamat, norm, nobpjs} = req.body;
+        const {nama, tgllahir, umur, alamat, norm, nobpjs,  role} = req.body;
         if(req.role === "admin"){
-            await Pasien.destroy({
+            await Pasiens.destroy({
                 where:{
                     id: pasien.id
                 }
             });
         }else{
             if(req.userId !== pasien.userId) return res.status(403).json({msg: "Akses terlarang"});
-            await Pasien.destroy({
+            await Pasiens.destroy({
                 where:{
                     [Op.and]:[{id: pasien.id}, {userId: req.userId}]
                 }
