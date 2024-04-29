@@ -28,7 +28,7 @@ export const refreshToken = async (req, res) => {
             }
             
             // Jika verifikasi berhasil, buat accessToken baru
-            const { id, uuid, username, email, role } = user;
+            const { id, uuid, username, email, role } = decoded; // Gunakan decoded, bukan user
             const accessToken = jwt.sign({ id, uuid, username, email, role }, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '15s'
             });
