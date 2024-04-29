@@ -47,8 +47,8 @@ app.use(session({
 
 app.use(cors({
     credentials: true,
-    origin: 'https://feuserisena.vercel.app',
-    // origin: 'https://isena-fktp.vercel.app',
+    // origin: 'https://feuserisena.vercel.app',
+    origin: 'https://feuserisena.onrender.com',
 }))
 
 app.use(express.json());
