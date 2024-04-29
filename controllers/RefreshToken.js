@@ -17,7 +17,15 @@ export const refreshToken = async (req, res) => {
 
         // Verifikasi refreshToken
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-            if (err) return res.sendStatus(403);
+            if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    // Token kedaluwarsa, kirim status 401 Unauthorized
+                    return res.sendStatus(401);
+                } else {
+                    // Token tidak valid, kirim status 403 Forbidden
+                    return res.sendStatus(403);
+                }
+            }
             
             // Jika verifikasi berhasil, buat accessToken baru
             const { id, uuid, username, email, role } = user;
