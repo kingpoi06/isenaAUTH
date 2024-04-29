@@ -1,30 +1,35 @@
-import Users from "../models/UserModel.js"
-import jwt from "jsonwebtoken"
+import Users from "../models/UserModel.js";
+import jwt from "jsonwebtoken";
 
-export const refreshToken = async(req, res) =>{
+export const refreshToken = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
-        if(!refreshToken) return res.sendStatus(401);
-        const user = await Users.findAll({
+        if (!refreshToken) return res.sendStatus(401);
+        
+        // Cari user berdasarkan refreshToken
+        const user = await Users.findOne({
             where: {
                 jwt_token: refreshToken
             }
         });
-        if(!user[0]) return res.sendStatus(403);
+
+        if (!user) return res.sendStatus(403);
+
+        // Verifikasi refreshToken
         jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
-            if(err) return res.sendStatus(403);
-            const userId = user[0].id;
-            const uuid = user[0].uuid;
-            const username = user[0].username;
-            const email = user[0].email;
-            const role = user[0].role;
-            const accessToken = jwt.sign({userId, uuid, username, email, role}, process.env.ACCESS_TOKEN_SECRET, {
+            if (err) return res.sendStatus(403);
+            
+            // Jika verifikasi berhasil, buat accessToken baru
+            const { id, uuid, username, email, role } = user;
+            const accessToken = jwt.sign({ id, uuid, username, email, role }, process.env.ACCESS_TOKEN_SECRET, {
                 expiresIn: '15s'
             });
-            res.json({ accessToken })
-            
-        })
-    } catch (error){
-        console.log(error);
+
+            // Kirim accessToken sebagai respons
+            res.json({ accessToken });
+        });
+    } catch (error) {
+        console.error(error);
+        res.sendStatus(500); // Internal Server Error
     }
-}
+};
